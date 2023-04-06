@@ -1,2 +1,3 @@
 # Allstar-Node-LCD
-Use a adaFruit 2 line LCD kit with your Raspberry PI Allstar Node
+Use a adaFruit 2 line LCD kit with your Raspberry PI Allstar Node.
+(Tested with Hamvoip distro only)
