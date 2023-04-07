@@ -1,0 +1,126 @@
+********Getting started quickly********
+
+	1) Copy the aslLCD executable file to your Raspberry PI Allstar Node.  Your choice where it goes.  Recommendation is to make a folder under /etc called aslLCD (/etc/aslLCD)
+	2) Copy the conf file to the /etc directory.  The conf file must go here.
+	3) Change the permissions for aslLCD to make it executable (either use properties in winSCP or at command line chmod -e /etc/aslLCD/aslLCD assuming
+	you put the executable in the recommended place.
+	4) Edit /etc/rc.local (nano /etc/rc.local or however you edit files) and add the line right before exit(0) (but after the call to start asterisk):
+	/etc/aslLCD/aslLCD & > /dev/null
+
+The above 4 steps will get you going with aslLCD.  BUT.....  there's another feature you'll want to have...  The backlight color on the LCD display can change based on what's going on!  PTT, COS, having a network connection, etc can cause the backlight color to indicate what your node is doing...  Network status will just work as is, but in order to have COS and PTT show up, you'll need to go a few steps further...
+
+aslLCD will accept commands over a socket link using port 8279.  c/C control COS indication and p/P control PTT indication.  Simple Netcat commands can do this...
+
+In rpt.conf you can set up things that will happen based on COS and PTT.  For aslLCD you can edit rpt.conf as follows (or have rpt.conf call scripts that include the following).
+
+Under the [events12345] stanza where 12345 is YOUR node number add:
+
+echo C | nc localhost 8279 = s|t|RPT_RXKEYED
+echo c | nc localhost 8279 = s|f|RPT_RXKEYED
+echo P | nc localhost 8279 = s|t|RPT_TXKEYED
+echo p | nc localhost 8279 = s|f|RPT_TXKEYED
+
+That will send C, c, P, or p as needed to the aslLCD program.
+
+********Troubleshooting before you have trouble********
+Before we cover what aslLCD can do, it must be mentioned that 9/10 times, problems with aslLCD are due to permissions.  aslLCD MUST be allowed to be executable.
+
+********What can aslLCD do for you?********
+aslLCD implements the following main menu items:
+
+	1) Node Connect
+	2) Node Disconnect
+	3) Show Connections
+	4) Set Active Node
+	5) Show Active Node
+	6) View Node Info.
+	7) Shutdown Node
+	8) Reboot Node
+	9) View Other Info
+	10) Wifi Connect
+	11) Backlight Test
+	12) Run Script
+	13) Quit LCD
+
+The menus will be documented herein, but first we need to cover a few basics.  Much of aslLCD is user configurable.  Things like...
+	1) Connecting from your favorite nodes
+	2) Setting backlight colors for differente events
+	3) Setting scripts you want to run
+	4) What shows on your LCD at startup.
+
+All of this stuff is configurable in aslLCD.conf.  The user is encouraged to check out that file (and edit it to ones liking!)  There are plenty of comments that should make it clear what can be changed (and the things best left alone.)
+
+It can even be setup to work in languages other than English - provided the user can translate...
+
+********The buttons on the adaFruit display kit and what they do********
+There are 5 buttons on the display kit.  UP, DOWN, LEFT, RIGHT and SELECT.  In general, they do exactly as they are called, but the LEFT button can be used to exit from a sub-menu to get back to the Main Menu if cancelling an action is necessary (or you just want to explore.)
+
+********Main Menu Navigation********
+Press UP or DOWN to scroll through Main Menu items.  Press SELECT to enter the associated sub-menu or execute the associated function.
+
+********Node Connect Menu********
+Selecting 'Node Connect' will allow you to connect to one of your favorite nodes, or connect to a node by entering its node number.  Press SELECT at the 'Node Connect' prompt on the Main Menu to enter the node connection sub-menus.  Two sub-menuys will be available that can be selected using the UP or DOWN keys: 'Favorites' or 'Enter Node Num'.  Press SELECT to activate the desired function (LEFT button will return to Main Menu.)
+
+'Favorites' will load your list of Favorites from aslLCD.conf.  Pressing UP or DOWN will allow scrolling through the favorites you've set up.  Pressing SELECT will cause your node to attempt to connect.
+
+'Enter Node Num' allows the user to enter a new node number.  Once here, the LEFT and RIGHT buttons move the cursor to the digit to change.  UP and DOWN increment or decrement the digit at the current location.  If you use the LEFT to scroll beyond the start of the node number, the ability to Cancel and return to the Main Menu will be available.
+
+********Node Disconnect Menu********
+Using this function will read the nodes to which you're connected.  Using the UP or DOWN buttons you can select the node from which you wish to disconnect.  Also available is a function to Disconnect from all.  The LEFT button can be used to return to the Main Menu.
+
+It should be noted that the Disconnect function will disconnect nodes connected to the actively selected LOCAL node (to be covered later herein.)
+
+********Show Connections Menu*********
+This function will read a list of nodes connected to your node.  Using the UP and DOWN buttons will allow the user to scroll through a list of connected nodes.  If you have more than 20 nodes connected, only the first 20 will be listed.
+
+*********Set Active Node Menu*********
+This menu will allow the user to select which LOCAL node is to be worked with.  For example a typical node wioth node numbers 12345 and 1999 (where 12345 is your assigned node number from AllStarLink.org)
+
+Connects, Disconnects, Node Info, etc. will all use the set node.
+
+********Show Active Node Menu*********
+This menu displays the currently selected LOCAL node
+
+********View Node Info. Menu********
+Using UP and DOWN buttons to bring up information about your node.  Two data values are currently supported: the node 'Up Time' and the number (count) of nodes connected.  As usual, the LEFT button will return you to the Main Menu.
+
+********Shutdown Node Menu********
+This function allows a safe and clean shutdown of the PI node.  All connections are disconnected and the node will shut down gracefully.
+
+********Reboot Node Menu*********
+Same as above, excpet the node comes back up again.
+
+********View Other Info Menu********
+Use UP or DOWN buttons to select one of the following:
+	1) 'Show Clock' displays local time.  UP and DOWN buttons toggle between 12 hours and 24 hour clocks.
+	2) 'Show IP address' shows your node's IP address.  This is useful to know what address your SSH access lives.
+	3) 'Show CPU Temperature' shows the temperature of the Raspberry Pi's CPU temperature.  The display will update as the temperature changes.
+	4) 'ASL LCD Version' shows the version of the aslLCD software.
+
+********Wifi Connect Menu********
+This allows connection to a new Wifi Network.  Selecting this item will cause the node to scan for available wifi networks.  UP or DOWN scrolls through the loist of visible network SSIDs.  Pressing SELECT will prompt for a the network password.  The password is entered in much the same way as entering a node number.
+
+********Backlight Test Menu********
+After entering this function, you can use the UP or DOWN buttons to view the different backlight colors available.  Pressing LEFT returns to the Main Menu.
+
+********Run Script Menu********
+TODO -- document this
+
+********Quit LCD Menu*********
+TOIDO -- document this
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
