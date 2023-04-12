@@ -28,7 +28,7 @@
 *    Date    |      Eng     |               Description
 *  ----------+--------------+------------------------------------------------
 *  03/12/23  | John Gedde   |  	Original Version
-*  04/0623   | John Gedde   |  	1) Increase number of favorites to 20
+*  04/06/23  | John Gedde   |  	1) Increase number of favorites to 20
 *								2) Add Disconnect All option to disconnect
 *								menu.
 *  
