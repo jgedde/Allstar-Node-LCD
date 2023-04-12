@@ -23,7 +23,7 @@ echo p | nc localhost 8279 = s|f|RPT_TXKEYED
 That will send C, c, P, or p as needed to the aslLCD program.
 
 ********Troubleshooting before you have trouble********
-Before we cover what aslLCD can do, it must be mentioned that 9/10 times, problems with aslLCD are due to permissions.  aslLCD MUST be allowed to be executable.
+Before we cover what aslLCD can do, it must be mentioned that 9/10 times, problems with aslLCD are due to permissions.  aslLCD MUST be allowed to be executable.  If that doesn't work, comment out the call to aslLCD in rc.local, reboot, and try running aslLCD from a shell prompt: navigate to the directory where the executable lives then type ./aslLCD  If there are any errors you'll see them appear.
 
 ********What can aslLCD do for you?********
 aslLCD implements the following main menu items:
@@ -104,10 +104,16 @@ This allows connection to a new Wifi Network.  Selecting this item will cause th
 After entering this function, you can use the UP or DOWN buttons to view the different backlight colors available.  Pressing LEFT returns to the Main Menu.
 
 ********Run Script Menu********
-TODO -- document this
+aslLCD can call script files on the node.  There are several built-in scripts as part of the distribution, plus you can make your own.  The canned scripts live in /usr/local/sbin.  Scripts are set-up in aslLCD.conf.  There are four parts to settup a script to be run from aslLCD all of whioch get defined in aslLCD.conf.  Thge documentation below assumes script 0, but you can set-up as many as ten (0-9.)
+script_path0: that's the path to script file.  E.g. script_path0 = "/usr/local/sbin/speaktext.sh"
+script_name0: this is what appears on the LCD display.  You have up to 16 characters for your name.  E.g. script_name0 = "Speak Text: Hi"
+script_param0: here you can define parameters to be passed to the script.  E.g. script_param0 = "Hi"
+script_need_node_num0: Many scripts need the localnode number provided to it as a command line option.  Setting this to 1 will automatically include your selected localnode in the call to the script.  E.g. script_need_node_num0=1
+
+The above example will call the speaktest.sh script in /usr/local/sbin as follows (where 12345 is the selected local node number): speaktest.sh 12345 "Hi"
 
 ********Quit LCD Menu*********
-TOIDO -- document this
+This exits the aslLCD software and turn off the display, but the node is still active.
 
 
 
