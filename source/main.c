@@ -29,8 +29,11 @@
 *  ----------+--------------+------------------------------------------------
 *  03/12/23  | John Gedde   |  	Original Version
 *  04/06/23  | John Gedde   |  	1) Increase number of favorites to 20
-*								2) Add Disconnect All option to disconnect
-*								menu.
+*            |				|	2) Add Disconnect All option to disconnect
+*            |  			|	menu.
+*  04/19/23  | John Gedde   |   1) If a 'friendly name' is available
+*								for a node we're connected to, show that
+*                               in the disconnect menu
 *  
 ****************************************************************************/
 
@@ -71,7 +74,7 @@
 #define MAX_WIFI_NAME_LEN	96
 #define MAX_PASSWORD_LEN	64
 
-char strVersion[]="v1.1.0";
+char strVersion[]="v1.2.0";
 
 typedef enum
 {
@@ -166,9 +169,7 @@ static void 				displayPassword(uint16_t pos, char* pw);
 static uint16_t 			findCharIndex(const char *str, char c);
 static void 				rebootHandler();
 static void 				postConnectReboot();
-
-// TODO -- printfs for error messsages?  Meh.
-
+static void 				displaySelectedNode(uint16_t connIdx, NodeConns_t *nodeConns);
 
 /*-----------------------------------------------------------------------------
 Function:
@@ -1227,6 +1228,59 @@ static void displayVersion()
 			break;
 	}
 }
+
+
+/*-----------------------------------------------------------------------------
+Function:
+	displaySelectedNode   
+Synopsis:
+	Displays the node number of the selected node on line 2 of the display.
+	It will search the list of favorties for a match.  If it finds a match
+	in the favorites list, it'll then check to see if there's a friendly
+	name associated.  If so, it'll display the frieindly name.
+Author:
+	John Gedde
+Inputs:
+	connIdx: The index of the node in the node list.
+	nodeConns: Pointer to the node list structure
+Outputs:
+	None
+-----------------------------------------------------------------------------*/
+void displaySelectedNode(uint16_t connIdx, NodeConns_t *nodeConns)
+{
+	char buf[64];
+	char lcdBuf[17];
+	bool foundFriendly=FALSE;
+	uint32_t nodeRead;
+	const char* s;
+		
+	for (uint16_t i=0; i<MAX_NODE_INFO_COUNT; ++i)
+	{
+		sprintf(buf, "favorites:favnode%u", i);
+		nodeRead=iniparser_getint(ini, buf, 0);
+		if (nodeConns->Nodes[connIdx].nodeNum==nodeRead)
+		{
+			// found a match, now check to see if there's a friendly name
+			sprintf(buf, "favorites:friendlyName%u", i);
+			s=iniparser_getstring_16(ini, buf, "");
+			if (s[0])
+			{
+				// Show the friendly name
+				strcpy(lcdBuf, s);
+				lcdWriteLn(lcdBuf, LCD_LINE2, TRUE);
+				foundFriendly=TRUE;	
+				break;								
+			}
+		}
+	}		
+	if (!foundFriendly)
+	{
+		// Just shpow the node number
+		sprintf(lcdBuf, "%u", nodeConns->Nodes[connIdx].nodeNum);
+		lcdWriteLn(lcdBuf, LCD_LINE2, TRUE);
+	}
+}
+
 	
 /*-----------------------------------------------------------------------------
 Function:
@@ -1245,10 +1299,9 @@ static void nodeDisconnect()
 {
 	NodeConns_t nodeConns = { 0 };
 	const char *s;
-	uint16_t buttons;
+	uint16_t buttons=0;
 	uint16_t connIdx=0;
-	char lcdBuf[17];
-	char astCmd[64];
+	char astCmd[64];	
 	
 	lcdClearScreen();
 	
@@ -1270,15 +1323,11 @@ static void nodeDisconnect()
 	}
 	else		
 	{
-		sprintf(lcdBuf, "%u", nodeConns.Nodes[0].nodeNum);
-		lcdWriteLn(lcdBuf, LCD_LINE2, TRUE);
-		
+		displaySelectedNode(connIdx, &nodeConns);
 		for (;;)
 		{
-			buttons = waitForButton(0, BTN_ANY, BTN_TRIG_EDGE);
-			
 			if ((buttons & BTN_UP) || (buttons & BTN_DOWN))
-			{				
+			{	
 				if (buttons & BTN_UP)
 				{
 					if (connIdx>=nodeConns.numNodes)
@@ -1300,8 +1349,7 @@ static void nodeDisconnect()
 				}
 				else
 				{
-					sprintf(lcdBuf, "%u", nodeConns.Nodes[connIdx].nodeNum);
-					lcdWriteLn(lcdBuf, LCD_LINE2, TRUE);
+					displaySelectedNode(connIdx, &nodeConns);
 				}
 			}
 			else if (buttons & BTN_SELECT)
@@ -1320,6 +1368,8 @@ static void nodeDisconnect()
 			}
 			else if (buttons & BTN_LEFT)
 				break;
+		
+			buttons = waitForButton(0, BTN_ANY, BTN_TRIG_EDGE);
 		}		
 	}
 }
@@ -1403,8 +1453,7 @@ static void showConnections()
 	const char *s;
 	uint16_t buttons;
 	uint16_t connIdx=0;
-	char lcdBuf[17];
-	
+		
 	lcdClearScreen();
 	
 	s=iniparser_getstring_16(ini, "headings:hdg_connections", strConfProblem);
@@ -1428,8 +1477,7 @@ static void showConnections()
 	}
 	else
 	{
-		sprintf(lcdBuf, "%u", nodeConns.Nodes[0].nodeNum);
-		lcdWriteLn(lcdBuf, LCD_LINE2, TRUE);
+		displaySelectedNode(connIdx, &nodeConns);
 		
 		for (;;)
 		{
@@ -1449,8 +1497,7 @@ static void showConnections()
 				else
 					connIdx--;	
 				
-				sprintf(lcdBuf, "%u", nodeConns.Nodes[connIdx].nodeNum);
-				lcdWriteLn(lcdBuf, LCD_LINE2, TRUE);
+				displaySelectedNode(connIdx, &nodeConns);
 			}
 			else if ((buttons & BTN_SELECT) || (buttons & BTN_LEFT))
 				break;
