@@ -6,8 +6,10 @@
 	you put the executable in the recommended place.
 	4) Edit /etc/rc.local (nano /etc/rc.local or however you edit files) and add the line right before exit(0) (but after the call to start asterisk):
 	/etc/aslLCD/aslLCD & > /dev/null
+	5) Install a pacakage called iniparser from the repository.  This package is used by aslLLCD to handle readins and writing the conf file.  In HamVOIP's Arch 	linux distro, use:
+	pacman -S iniparser
 
-The above 4 steps will get you going with aslLCD.  BUT.....  there's another feature you'll want to have...  The backlight color on the LCD display can change based on what's going on!  PTT, COS, having a network connection, etc can cause the backlight color to indicate what your node is doing...  Network status will just work as is, but in order to have COS and PTT show up, you'll need to go a few steps further...
+The above 5 steps will get you going with aslLCD.  BUT.....  there's another feature you'll want to have...  The backlight color on the LCD display can change based on what's going on!  PTT, COS, having a network connection, etc can cause the backlight color to indicate what your node is doing...  Network status will just work as is, but in order to have COS and PTT show up, you'll need to go a few steps further...
 
 aslLCD will accept commands over a socket link using port 8279.  c/C control COS indication and p/P control PTT indication.  Simple Netcat commands can do this...
 
